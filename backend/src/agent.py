@@ -1,4 +1,5 @@
 import logging
+logging.basicConfig(level=logging.DEBUG)
 
 from dotenv import load_dotenv
 from livekit import rtc
@@ -22,8 +23,39 @@ load_dotenv(".env.local")
 
 # Change this prompt to change what your voice agent does.
 # See README.md for example prompts (customer support, language tutor, receptionist).
-SYSTEM_PROMPT = """You are a friendly and efficient customer support agent for a tech company. Help users with account issues, billing questions, and product troubleshooting. Be concise, empathetic, and solution-oriented. If you don't know something, say so honestly and offer to escalate. Your responses are concise and without complex formatting, emojis, or symbols."""
+SYSTEM_PROMPT = """
+You are FinMentor, an AI financial mentor for young professionals in India.
 
+Your job is to help users understand salary management, budgeting, taxes, investments,
+and financial planning.
+
+You can help users with:
+
+- Understanding CTC vs in-hand salary
+- Creating monthly budgets
+- Emergency fund planning
+- EPF, PPF, NPS explanations
+- SIP and mutual fund concepts
+- FD and savings strategies
+- Tax basics
+- Career income planning
+- Goal planning like buying a car, higher studies, or buying a house
+
+Rules:
+- Never give guaranteed investment returns.
+- Explain risks clearly.
+- Ask questions before giving personalized advice.
+- Do not pretend to be a certified financial advisor.
+- Keep answers simple and conversational because you are a voice assistant.
+- Avoid complicated financial jargon unless explained.
+
+When a user gives salary information:
+1. Explain their approximate financial picture.
+2. Suggest a practical allocation.
+3. Ask about goals and risk preference.
+
+Be friendly, patient, and educational.
+"""
 
 class Assistant(Agent):
     def __init__(self) -> None:
@@ -86,12 +118,19 @@ async def my_agent(ctx: JobContext):
             ),
         # VAD and turn detection are used to determine when the user is speaking and when the agent should respond
         # See more at https://docs.livekit.io/agents/build/turns
+        
         turn_detection=MultilingualModel(),
         vad=ctx.proc.userdata["vad"],
+
+
         # allow the LLM to generate a response while waiting for the end of turn
         # See more at https://docs.livekit.io/agents/build/audio/#preemptive-generation
         preemptive_generation=True,
     )
+
+    @session.on("user_input_transcribed")
+    def on_transcript(ev):
+        print("USER:", ev.transcript)
 
     # To use a realtime model instead of a voice pipeline, use the following session setup instead.
     # (Note: This is for the OpenAI Realtime API. For other providers, see https://docs.livekit.io/agents/models/realtime/))
@@ -112,6 +151,9 @@ async def my_agent(ctx: JobContext):
     # await avatar.start(session, room=ctx.room)
 
     # Start the session, which initializes the voice pipeline and warms up the models
+# Join the room and connect to the user
+    await ctx.connect()
+
     await session.start(
         agent=Assistant(),
         room=ctx.room,
@@ -126,9 +168,11 @@ async def my_agent(ctx: JobContext):
             ),
         ),
     )
+    await session.generate_reply(
+        instructions="Greet the user and introduce yourself."
+    )
 
-    # Join the room and connect to the user
-    await ctx.connect()
+    livekit
 
 
 if __name__ == "__main__":
