@@ -1,8 +1,12 @@
 import logging
+import asyncio
+
 logging.basicConfig(level=logging.DEBUG)
 
+from prompt import SYSTEM_PROMPT
 from dotenv import load_dotenv
 from livekit import rtc
+
 from livekit.agents import (
     Agent,
     AgentServer,
@@ -14,69 +18,51 @@ from livekit.agents import (
     tokenize,
     room_io,
 )
-from livekit.plugins import murf, silero, google, deepgram, noise_cancellation
+
+from livekit.plugins import (
+    murf,
+    silero,
+    google,
+    deepgram,
+    noise_cancellation,
+)
+
 from livekit.plugins.turn_detector.multilingual import MultilingualModel
 
 logger = logging.getLogger("agent")
 
 load_dotenv(".env.local")
 
+
 # Change this prompt to change what your voice agent does.
+#
 # See README.md for example prompts (customer support, language tutor, receptionist).
-SYSTEM_PROMPT = """
-You are CashCompass, an AI financial mentor for young professionals in India.
 
-Your job is to help users understand salary management, budgeting, taxes,
-investments, and financial planning.
-
-You can help users with:
-
-- Understanding CTC vs in-hand salary
-- Creating monthly budgets
-- Emergency fund planning
-- EPF, PPF, NPS explanations
-- SIP and mutual fund concepts
-- FD and savings strategies
-- Tax basics
-- Career income planning
-- Goal planning like buying a car or pursuing higher studies
-
-Rules:
-- Never guarantee investment returns.
-- Explain risks clearly.
-- Ask questions before giving personalized financial advice.
-- Do not pretend to be a certified financial advisor.
-- Keep answers simple and conversational because this is a voice assistant.
-- Explain financial terms in easy language.
-
-When a user shares salary information:
-1. Explain their approximate financial situation.
-2. Suggest a practical money allocation.
-3. Ask about their goals and risk preference.
-
-Be friendly, patient, and educational.
-"""
 
 class Assistant(Agent):
+
     def __init__(self) -> None:
         super().__init__(instructions=SYSTEM_PROMPT)
 
-    # To add tools, use the @function_tool decorator.
-    # Here's an example that adds a simple weather tool.
-    # You also have to add `from livekit.agents import function_tool, RunContext` to the top of this file
-    # @function_tool
-    # async def lookup_weather(self, context: RunContext, location: str):
-    #     """Use this tool to look up current weather information in the given location.
-    #
-    #     If the location is not supported by the weather service, the tool will indicate this. You must tell the user the location's weather is unavailable.
-    #
-    #     Args:
-    #         location: The location to look up weather information for (e.g. city name)
-    #     """
-    #
-    #     logger.info(f"Looking up weather for {location}")
-    #
-    #     return "sunny with a temperature of 70 degrees."
+        # To add tools, use the @function_tool decorator.
+        # Here's an example that adds a simple weather tool.
+        # You also have to add `from livekit.agents import function_tool, RunContext` to the top of this file
+        # @function_tool
+        # async def lookup_weather(self, context: RunContext, location: str):
+        #     """Use this tool to look up the weather for a location.
+        #
+        #     If the location is not supported by the weather service,
+        #     the tool will indicate this. You must tell the user
+        #     the location's weather is unavailable.
+        #
+        #     Args:
+        #         location: The location to look up weather information
+        #         for (e.g. city name)
+        #     """
+        #
+        #     logger.info(f"Looking up weather for {location}")
+        #
+        #     return "sunny with a temperature of 70 degrees."
 
 
 server = AgentServer()
@@ -91,56 +77,162 @@ server.setup_fnc = prewarm
 
 @server.rtc_session(agent_name="my-agent")
 async def my_agent(ctx: JobContext):
+
     # Logging setup
     # Add any other context you want in all log entries here
     ctx.log_context_fields = {
         "room": ctx.room.name,
     }
 
-    # Set up a voice AI pipeline using Murf Falcon, Gemini, Deepgram, and the LiveKit turn detector
+    # Set up a voice AI pipeline using Murf Falcon, Gemini,
+    # Deepgram, and the LiveKit turn detector
+    #
+    # CashCompass is the financial voice assistant.
     session = AgentSession(
-        # Speech-to-text (STT) is your agent's ears, turning the user's speech into text that the LLM can understand
+
+        # Speech-to-text (STT) is your agent's ears,
+        # turning the user's speech into text that the LLM can understand
         # See all available models at https://docs.livekit.io/agents/models/stt/
-        stt=deepgram.STT(model="nova-3"),
-        # A Large Language Model (LLM) is your agent's brain, processing user input and generating a response
+        stt=deepgram.STT(
+            model="nova-3",
+            language="multi",
+        ),
+
+        # A Large Language Model (LLM) is your agent's brain,
+        # processing user input and generating a response
         # See all available models at https://docs.livekit.io/agents/models/llm/
         llm=google.LLM(
-                model="gemini-3.5-flash-lite",
-            ),
-        # Text-to-speech (TTS) is your agent's voice, turning the LLM's text into speech that the user can hear
+            model="gemini-3.5-flash-lite",
+        ),
+
+        # Text-to-speech (TTS) is your agent's voice,
+        # turning the LLM's text into speech that the user can hear
         # See all available models as well as voice selections at https://docs.livekit.io/agents/models/tts/
         tts=murf.TTS(
-                voice="Anisha", 
-                locale="en-IN",
-                style="Conversation",
-                tokenizer=tokenize.basic.SentenceTokenizer(min_sentence_len=2),
-                text_pacing=True
+            voice="Anisha",
+            locale="en-IN",
+            style="Conversation",
+            tokenizer=tokenize.basic.SentenceTokenizer(
+                min_sentence_len=2
             ),
-        # VAD and turn detection are used to determine when the user is speaking and when the agent should respond
+            text_pacing=True,
+        ),
+
+        # VAD and turn detection are used to determine when
+        # the user is speaking and when the agent should respond
         # See more at https://docs.livekit.io/agents/build/turns
-        
         turn_detection=MultilingualModel(),
         vad=ctx.proc.userdata["vad"],
 
-
-        # allow the LLM to generate a response while waiting for the end of turn
+        # allow the LLM to generate a response while waiting
+        # for the end of turn
         # See more at https://docs.livekit.io/agents/build/audio/#preemptive-generation
         preemptive_generation=True,
+
+        # Consider the user away after 10 seconds of inactivity
+        user_away_timeout=10.0,
     )
+
 
     @session.on("user_input_transcribed")
     def on_transcript(ev):
         print("USER:", ev.transcript)
 
-    # To use a realtime model instead of a voice pipeline, use the following session setup instead.
-    # (Note: This is for the OpenAI Realtime API. For other providers, see https://docs.livekit.io/agents/models/realtime/))
+
+    # ---------------------------------------------------------
+    # SILENT USER HANDLING
+    # ---------------------------------------------------------
+
+    silence_task = None
+
+
+    async def silence_handler():
+
+        # First re-prompt after silence
+        await session.generate_reply(
+            instructions=(
+                "The user has been silent. "
+                "Say: Are you still there? I'm listening."
+            )
+        )
+
+        # Wait another 10 seconds
+        await asyncio.sleep(10)
+
+
+        # Second re-prompt
+        await session.generate_reply(
+            instructions=(
+                "The user is still silent. "
+                "Say: Would you like to continue, "
+                "or should I end the call?"
+            )
+        )
+
+        # Wait another 10 seconds
+        await asyncio.sleep(10)
+
+
+        # Graceful close
+        await session.generate_reply(
+            instructions=(
+                "The user has not responded after two check-ins. "
+                "Say: No problem. We'll end the call here. Goodbye."
+            )
+        )
+
+        # Give the TTS time to finish speaking
+        await asyncio.sleep(3)
+
+        await ctx.room.disconnect()
+
+    @session.on("user_state_changed")
+    def on_user_state_changed(ev):
+
+        nonlocal silence_task
+
+        print(
+            "USER STATE:",
+            ev.old_state,
+            "->",
+            ev.new_state,
+        )
+
+
+        # User has been silent long enough
+        if ev.new_state == "away":
+
+            # Start only one silence task
+            if silence_task is None:
+                silence_task = asyncio.create_task(
+                    silence_handler()
+                )
+
+
+        # User started speaking again
+        elif ev.new_state == "speaking":
+
+            # Cancel the silence flow
+            if silence_task is not None:
+                silence_task.cancel()
+                silence_task = None
+
+
+    # To use a realtime model instead of a voice pipeline,
+    # use the following session setup instead.
+    #
+    # (Note: This is for the OpenAI Realtime API.
+    # For other providers, see https://docs.livekit.io/agents/models/realtime/)
+    #
     # 1. Install livekit-agents[openai]
     # 2. Set OPENAI_API_KEY in .env.local
     # 3. Add `from livekit.plugins import openai` to the top of this file
     # 4. Use the following session setup instead of the version above
+    #
     # session = AgentSession(
     #     llm=openai.realtime.RealtimeModel(voice="marin")
     # )
+
 
     # # Add a virtual avatar to the session, if desired
     # # For other providers, see https://docs.livekit.io/agents/models/avatar/
@@ -150,9 +242,13 @@ async def my_agent(ctx: JobContext):
     # # Start the avatar and wait for it to join
     # await avatar.start(session, room=ctx.room)
 
-    # Start the session, which initializes the voice pipeline and warms up the models
-# Join the room and connect to the user
+
+    # Start the session, which initializes the voice pipeline
+    # and warms up the models
+
+    # Join the room and connect to the user
     await ctx.connect()
+
 
     await session.start(
         agent=Assistant(),
@@ -168,11 +264,11 @@ async def my_agent(ctx: JobContext):
             ),
         ),
     )
-    await session.generate_reply(
-        instructions="Greet the user and introduce yourself."
-    )
 
-    
+
+    await session.generate_reply(
+        instructions="Greet the user and introduce yourself as CashCompass."
+    )
 
 
 if __name__ == "__main__":
