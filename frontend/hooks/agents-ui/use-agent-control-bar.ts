@@ -122,13 +122,37 @@ export function useInputControls({
   );
 
   const handleToggleMicrophone = useCallback(
-    async (enabled?: boolean) => {
-      await microphoneToggle.toggle(enabled);
-      // persist audio input enabled preference
-      saveAudioInputEnabled(!microphoneToggle.enabled);
-    },
-    [microphoneToggle, saveAudioInputEnabled]
-  );
+  async (enabled?: boolean) => {
+    if (enabled === false) {
+      await microphoneToggle.toggle(false);
+      saveAudioInputEnabled(false);
+      return;
+    }
+
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: true,
+      });
+
+      stream.getTracks().forEach((track) => track.stop());
+
+      await microphoneToggle.toggle(true);
+
+      saveAudioInputEnabled(true);
+    } catch (error) {
+      const microphoneError =
+        error instanceof Error
+          ? error
+          : new Error('Microphone permission was denied.');
+
+      onDeviceError?.({
+        source: Track.Source.Microphone,
+        error: microphoneError,
+      });
+    }
+  },
+  [microphoneToggle, saveAudioInputEnabled, onDeviceError]
+);
 
   const handleToggleScreenShare = useCallback(
     async (enabled?: boolean) => {

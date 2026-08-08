@@ -207,12 +207,12 @@ export function AgentSessionView_01({
       <Fade top className="absolute inset-x-4 top-0 z-10 h-40" />
       {/* transcript */}
 
-      <div className="absolute top-0 bottom-[135px] flex w-full flex-col md:bottom-[170px]">
+      <div className="pointer-events-none absolute top-0 bottom-[135px] flex w-full flex-col md:bottom-[170px]">
         <AnimatePresence>
           {chatOpen && (
             <motion.div
               {...CHAT_MOTION_PROPS}
-              className="flex h-full w-full flex-col gap-4 space-y-3 transition-opacity duration-300 ease-out"
+              className="pointer-events-auto flex h-full w-full flex-col gap-4 space-y-3 transition-opacity duration-300 ease-out"
             >
               <AgentChatTranscript
                 agentState={agentState}
@@ -223,6 +223,79 @@ export function AgentSessionView_01({
           )}
         </AnimatePresence>
       </div>
+
+      {/* Financial Panel */}
+      <div className="absolute top-8 left-8 z-40 hidden w-64 flex-col gap-4 lg:flex">
+        <div className="rounded-2xl border border-zinc-800 bg-zinc-900/80 p-4 shadow-xl backdrop-blur-md">
+          <h3 className="mb-3 text-xs font-semibold tracking-wider text-zinc-500 uppercase">
+            Financial Context
+          </h3>
+          <div className="space-y-4">
+            {/* Live agent status indicator */}
+            <div className="flex items-center gap-3">
+              {agentState === 'speaking' && (
+                <span className="inline-flex items-center gap-2 rounded-full border border-blue-500/30 bg-blue-500/15 px-3 py-1.5 text-xs font-semibold text-blue-400">
+                  <span className="relative flex h-2 w-2">
+                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-blue-400 opacity-75" />
+                    <span className="relative inline-flex h-2 w-2 rounded-full bg-blue-400" />
+                  </span>
+                  Agent Speaking
+                </span>
+              )}
+              {agentState === 'thinking' && (
+                <span className="inline-flex items-center gap-2 rounded-full border border-purple-500/30 bg-purple-500/15 px-3 py-1.5 text-xs font-semibold text-purple-400">
+                  <span className="relative flex h-2 w-2">
+                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-purple-400 opacity-75" />
+                    <span className="relative inline-flex h-2 w-2 rounded-full bg-purple-400" />
+                  </span>
+                  Thinking...
+                </span>
+              )}
+              {agentState === 'listening' && (
+                <span className="inline-flex items-center gap-2 rounded-full border border-emerald-500/30 bg-emerald-500/15 px-3 py-1.5 text-xs font-semibold text-emerald-400">
+                  <span className="relative flex h-2 w-2">
+                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
+                    <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-400" />
+                  </span>
+                  Listening...
+                </span>
+              )}
+              {(agentState === 'idle' ||
+                agentState === 'connecting' ||
+                agentState === 'initializing' ||
+                !agentState) && (
+                <span className="inline-flex items-center gap-2 rounded-full border border-zinc-700 bg-zinc-800/50 px-3 py-1.5 text-xs font-semibold text-zinc-500">
+                  <span className="h-2 w-2 rounded-full bg-zinc-600" />
+                  Idle
+                </span>
+              )}
+            </div>
+
+            <div className="h-px bg-zinc-800" />
+
+            <div>
+              <p className="text-xs text-zinc-500">Conversation Goal</p>
+              <p className="mt-1 text-sm font-medium text-zinc-300">
+                {agentState === 'speaking' || agentState === 'thinking'
+                  ? 'Analyzing your question...'
+                  : 'Waiting for your question'}
+              </p>
+            </div>
+
+            <div>
+              <p className="text-xs text-zinc-500">Next Step</p>
+              <p className="mt-1 text-sm text-zinc-500 italic">
+                {agentState === 'speaking'
+                  ? 'Review the response'
+                  : agentState === 'thinking'
+                    ? 'Preparing your answer...'
+                    : 'Ask CashCompass anything'}
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* Tile layout */}
       <TileLayout
         chatOpen={chatOpen}

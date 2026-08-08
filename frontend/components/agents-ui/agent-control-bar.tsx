@@ -1,6 +1,12 @@
 'use client';
 
-import { type ComponentProps, useEffect, useRef, useState } from 'react';
+import {
+  type ComponentProps,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from 'react';
 import { Track } from 'livekit-client';
 import { Loader, MessageSquareTextIcon, SendHorizontal } from 'lucide-react';
 import { type MotionProps, motion } from 'motion/react';
@@ -117,7 +123,7 @@ function AgentChatInput({ chatOpen, onSend = async () => {}, className }: AgentC
         placeholder="Type something..."
         onKeyDown={handleKeyDown}
         onChange={(e) => setMessage(e.target.value)}
-        className="field-sizing-content max-h-16 min-h-8 flex-1 resize-none py-2 [scrollbar-width:thin] focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+        className="field-sizing-content max-h-16 min-h-8 flex-1 resize-none [scrollbar-width:thin] py-2 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
       />
       <Button
         size="icon"
@@ -254,16 +260,34 @@ export function AgentControlBar({
   const { send } = useChat();
   const publishPermissions = usePublishPermissions();
   const [isChatOpenUncontrolled, setIsChatOpenUncontrolled] = useState(isChatOpen);
-  const {
-    microphoneTrack,
-    cameraToggle,
-    microphoneToggle,
-    screenShareToggle,
-    handleAudioDeviceChange,
-    handleVideoDeviceChange,
-    handleMicrophoneDeviceSelectError,
-    handleCameraDeviceSelectError,
-  } = useInputControls({ onDeviceError, saveUserChoices });
+  const [microphoneError, setMicrophoneError] = useState<string | null>(null);
+
+  const handleDeviceError = useCallback(
+  ({ source, error }: { source: Track.Source; error: Error }) => {
+    if (source === Track.Source.Microphone) {
+      setMicrophoneError(
+        'Microphone access was denied or unavailable. Please allow microphone access in your browser settings and try again.'
+      );
+    }
+
+    onDeviceError?.({ source, error });
+  },
+  [onDeviceError]
+);
+
+const {
+  microphoneTrack,
+  microphoneToggle,
+  cameraToggle,
+  screenShareToggle,
+  handleAudioDeviceChange,
+  handleVideoDeviceChange,
+  handleMicrophoneDeviceSelectError,
+  handleCameraDeviceSelectError,
+} = useInputControls({
+  onDeviceError: handleDeviceError,
+  saveUserChoices,
+});
 
   const handleSendMessage = async (message: string) => {
     await send(message);
@@ -285,15 +309,38 @@ export function AgentControlBar({
   }
 
   return (
-    <div
-      aria-label="Voice assistant controls"
-      className={cn(
-        'bg-background border-input/50 dark:border-muted flex flex-col border p-3 drop-shadow-md/3',
-        variant === 'livekit' ? 'rounded-[31px]' : 'rounded-lg',
-        className
-      )}
-      {...props}
-    >
+  <div
+    aria-label="Voice assistant controls"
+    className={cn(
+      'bg-background border-input/50 dark:border-muted flex flex-col border p-3 drop-shadow-md/3',
+      variant === 'livekit' ? 'rounded-[31px]' : 'rounded-lg',
+      className
+    )}
+    {...props}
+  >
+    {microphoneError && (
+      <div
+        role="alert"
+        className="mb-3 rounded-lg border border-red-500/30 bg-red-500/10 p-4"
+      >
+        <p className="font-semibold text-red-500">
+          Microphone access blocked
+        </p>
+
+        <p className="mt-1 text-sm text-muted-foreground">
+          Your browser is blocking microphone access. Please open your browser
+          settings, allow microphone access for this site, and try again.
+        </p>
+
+        <button
+          type="button"
+          onClick={() => setMicrophoneError(null)}
+          className="mt-2 text-sm underline"
+        >
+          Dismiss
+        </button>
+      </div>
+    )}
       <motion.div
         {...MOTION_PROPS}
         inert={!(isChatOpen || isChatOpenUncontrolled)}

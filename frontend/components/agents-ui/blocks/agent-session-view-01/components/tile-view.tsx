@@ -8,8 +8,59 @@ import {
   useTracks,
   useVoiceAssistant,
 } from '@livekit/components-react';
+import type { AgentState } from '@livekit/components-react';
+import { Compass3D, type CompassState } from '@/components/app/compass-3d';
 import { cn } from '@/lib/shadcn/utils';
 import { AudioVisualizer } from './audio-visualizer';
+
+function toCompassState(state: AgentState | undefined): CompassState {
+  if (!state) return 'disconnected';
+  switch (state) {
+    case 'listening':
+      return 'listening';
+    case 'thinking':
+      return 'thinking';
+    case 'speaking':
+      return 'speaking';
+    case 'connecting':
+      return 'connecting';
+    case 'initializing':
+      return 'initializing';
+    default:
+      return 'idle';
+  }
+}
+
+function AgentStateLabel({ state }: { state: AgentState | undefined }) {
+  if (!state || state === 'idle' || state === 'disconnected') return null;
+  const labels: Partial<Record<AgentState, string>> = {
+    listening: 'Listening...',
+    thinking: 'Thinking...',
+    speaking: 'Agent Speaking',
+    connecting: 'Connecting...',
+    initializing: 'Starting...',
+  };
+  const label = labels[state];
+  if (!label) return null;
+  const colors: Partial<Record<AgentState, string>> = {
+    listening: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30',
+    thinking: 'bg-purple-500/20 text-purple-400 border-purple-500/30',
+    speaking: 'bg-blue-500/20 text-blue-400 border-blue-500/30',
+    connecting: 'bg-amber-500/20 text-amber-400 border-amber-500/30',
+    initializing: 'bg-amber-500/20 text-amber-400 border-amber-500/30',
+  };
+  return (
+    <div
+      className={`inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-semibold ${colors[state] ?? ''}`}
+    >
+      <span className="relative flex h-2 w-2">
+        <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-current opacity-75" />
+        <span className="relative inline-flex h-2 w-2 rounded-full bg-current" />
+      </span>
+      {label}
+    </div>
+  );
+}
 
 const ANIMATION_TRANSITION: MotionProps['transition'] = {
   type: 'spring',
@@ -92,7 +143,7 @@ export function TileLayout({
   audioVisualizerGridColumnCount,
   audioVisualizerWaveLineWidth,
 }: TileLayoutProps) {
-  const { videoTrack: agentVideoTrack } = useVoiceAssistant();
+  const { videoTrack: agentVideoTrack, state: agentState } = useVoiceAssistant();
   const [screenShareTrack] = useTracks([Track.Source.ScreenShare]);
   const cameraTrack: TrackReference | undefined = useLocalTrackRef(Track.Source.Camera);
 
@@ -130,33 +181,27 @@ export function TileLayout({
                     ...ANIMATION_TRANSITION,
                     delay: animationDelay,
                   }}
-                  className={cn('relative aspect-square h-[90px]')}
+                  className={cn(
+                    'relative aspect-square',
+                    chatOpen ? 'h-[120px]' : 'flex h-full w-full items-center justify-center'
+                  )}
                 >
-                  <AudioVisualizer
-                    key="audio-visualizer"
+                  <motion.div
+                    key="compass"
                     initial={{ scale: 1 }}
-                    animate={{ scale: chatOpen ? 0.2 : 1 }}
+                    animate={{ scale: chatOpen ? 0.6 : 1 }}
                     transition={{
                       ...ANIMATION_TRANSITION,
                       delay: animationDelay,
                     }}
-                    audioVisualizerType={audioVisualizerType}
-                    audioVisualizerColor={audioVisualizerColor}
-                    audioVisualizerColorShift={audioVisualizerColorShift}
-                    audioVisualizerBarCount={audioVisualizerBarCount}
-                    audioVisualizerRadialBarCount={audioVisualizerRadialBarCount}
-                    audioVisualizerRadialRadius={audioVisualizerRadialRadius}
-                    audioVisualizerGridRowCount={audioVisualizerGridRowCount}
-                    audioVisualizerGridColumnCount={audioVisualizerGridColumnCount}
-                    audioVisualizerWaveLineWidth={audioVisualizerWaveLineWidth}
-                    isChatOpen={chatOpen}
                     className={cn(
                       'absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2',
-                      'bg-background rounded-[50px] border border-transparent transition-[border,drop-shadow]',
-                      chatOpen && 'border-input shadow-2xl/10 delay-200'
+                      !chatOpen && 'aspect-square w-[80vw] max-w-[600px]',
+                      chatOpen && 'h-[200px] w-[200px]'
                     )}
-                    style={{ color: audioVisualizerColor }}
-                  />
+                  >
+                    <Compass3D agentState={toCompassState(agentState)} className="h-full w-full" />
+                  </motion.div>
                 </motion.div>
               )}
 

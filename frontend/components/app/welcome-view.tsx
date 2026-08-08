@@ -1,65 +1,166 @@
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-
-function WelcomeImage() {
-  return (
-    <svg
-      width="64"
-      height="64"
-      viewBox="0 0 64 64"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      className="text-fg0 mb-4 size-16"
-    >
-      <path
-        d="M15 24V40C15 40.7957 14.6839 41.5587 14.1213 42.1213C13.5587 42.6839 12.7956 43 12 43C11.2044 43 10.4413 42.6839 9.87868 42.1213C9.31607 41.5587 9 40.7957 9 40V24C9 23.2044 9.31607 22.4413 9.87868 21.8787C10.4413 21.3161 11.2044 21 12 21C12.7956 21 13.5587 21.3161 14.1213 21.8787C14.6839 22.4413 15 23.2044 15 24ZM22 5C21.2044 5 20.4413 5.31607 19.8787 5.87868C19.3161 6.44129 19 7.20435 19 8V56C19 56.7957 19.3161 57.5587 19.8787 58.1213C20.4413 58.6839 21.2044 59 22 59C22.7956 59 23.5587 58.6839 24.1213 58.1213C24.6839 57.5587 25 56.7957 25 56V8C25 7.20435 24.6839 6.44129 24.1213 5.87868C23.5587 5.31607 22.7956 5 22 5ZM32 13C31.2044 13 30.4413 13.3161 29.8787 13.8787C29.3161 14.4413 29 15.2044 29 16V48C29 48.7957 29.3161 49.5587 29.8787 50.1213C30.4413 50.6839 31.2044 51 32 51C32.7956 51 33.5587 50.6839 34.1213 50.1213C34.6839 49.5587 35 48.7957 35 48V16C35 15.2044 34.6839 14.4413 34.1213 13.8787C33.5587 13.3161 32.7956 13 32 13ZM42 21C41.2043 21 40.4413 21.3161 39.8787 21.8787C39.3161 22.4413 39 23.2044 39 24V40C39 40.7957 39.3161 41.5587 39.8787 42.1213C40.4413 42.6839 41.2043 43 42 43C42.7957 43 43.5587 42.6839 44.1213 42.1213C44.6839 41.5587 45 40.7957 45 40V24C45 23.2044 44.6839 22.4413 44.1213 21.8787C43.5587 21.3161 42.7957 21 42 21ZM52 17C51.2043 17 50.4413 17.3161 49.8787 17.8787C49.3161 18.4413 49 19.2044 49 20V44C49 44.7957 49.3161 45.5587 49.8787 46.1213C50.4413 46.6839 51.2043 47 52 47C52.7957 47 53.5587 46.6839 54.1213 46.1213C54.6839 45.5587 55 44.7957 55 44V20C55 19.2044 54.6839 18.4413 54.1213 17.8787C53.5587 17.3161 52.7957 17 52 17Z"
-        fill="currentColor"
-      />
-    </svg>
-  );
-}
+import { cn } from '@/lib/shadcn/utils';
+import { Compass3D } from './compass-3d';
+import { FinancialJourney, type LifeStage } from './financial-journey';
 
 interface WelcomeViewProps {
   startButtonText: string;
   onStartCall: () => void;
 }
 
-export const WelcomeView = ({
-  startButtonText,
-  onStartCall,
-  ref,
-}: React.ComponentProps<'div'> & WelcomeViewProps) => {
-  return (
-    <div ref={ref}>
-      <section className="bg-background flex flex-col items-center justify-center text-center">
-        <WelcomeImage />
+const LIFE_STAGES: LifeStage[] = [
+  {
+    id: 'first_salary',
+    title: 'First Salary',
+    question: '"Where should my ₹35,000 salary go?"',
+    description: 'Learn how to budget and give every rupee a purpose from day one.',
+    imagePath: '/assets/cashcompass/salary/visual.jpg',
+  },
+  {
+    id: 'managing_money',
+    title: 'Managing Money',
+    question: '"Why am I running out of money before the end of the month?"',
+    description: 'Track your spending and build healthy financial habits.',
+    imagePath: '/assets/cashcompass/budgeting/visual.jpg',
+  },
+  {
+    id: 'family_goals',
+    title: 'Family & Goals',
+    question: '"Can I afford this home without hurting my savings?"',
+    description: 'Plan for major life milestones with confidence.',
+    imagePath: '/assets/cashcompass/family/visual.jpg',
+  },
+  {
+    id: 'building_wealth',
+    title: 'Building Wealth',
+    question: '"How should I start investing?"',
+    description: 'Grow your wealth through smart, long-term investment strategies.',
+    imagePath: '/assets/cashcompass/wealth/visual.jpg',
+  },
+  {
+    id: 'retirement',
+    title: 'Planning Retirement',
+    question: '"Am I saving enough for the future?"',
+    description: 'Ensure a secure and comfortable retirement.',
+    imagePath: '/assets/cashcompass/retirement/visual.jpg',
+  },
+];
 
-        <p className="text-foreground max-w-prose pt-1 leading-6 font-medium">
-          Chat live with your voice AI agent
-        </p>
+export const WelcomeView = React.forwardRef<HTMLDivElement, WelcomeViewProps>(
+  ({ startButtonText, onStartCall, ...props }, ref) => {
+    const [activeStage, setActiveStage] = useState<LifeStage>(LIFE_STAGES[0]);
 
-        <Button
-          size="lg"
-          onClick={onStartCall}
-          className="mt-6 w-64 rounded-full font-mono text-xs font-bold tracking-wider uppercase"
-        >
-          {startButtonText}
-        </Button>
-      </section>
+    return (
+      <div
+        ref={ref}
+        className="flex min-h-screen flex-col items-center overflow-x-hidden bg-zinc-950 text-white"
+        {...props}
+      >
+        {/* SECTION 1: HERO */}
+        <section className="relative flex min-h-[90vh] w-full flex-col items-center justify-between px-6 pt-20 md:flex-row md:px-16 lg:px-24">
+          <div className="z-10 mt-10 flex max-w-2xl flex-1 flex-col items-start text-left md:mt-0">
+            <div className="mb-6 inline-block rounded-full border border-blue-500/20 bg-blue-500/10 px-4 py-1.5 text-sm font-semibold tracking-wide text-blue-400">
+              Meet CashCompass
+            </div>
+            <h1 className="mb-6 bg-gradient-to-r from-blue-400 via-emerald-400 to-emerald-200 bg-clip-text text-5xl leading-tight font-extrabold tracking-tight text-transparent md:text-7xl">
+              Your money.
+              <br />
+              Your journey.
+              <br />
+              Your Compass.
+            </h1>
+            <p className="mb-10 max-w-lg text-xl leading-relaxed font-medium text-zinc-400 md:text-2xl">
+              Financial guidance for every stage of life — from your first salary to retirement.
+            </p>
 
-      <div className="fixed bottom-5 left-0 flex w-full items-center justify-center">
-        <p className="text-muted-foreground max-w-prose pt-1 text-xs leading-5 font-normal text-pretty md:text-sm">
-          Need help getting set up? Check out the{' '}
-          <a
-            target="_blank"
-            rel="noopener noreferrer"
-            href="https://docs.livekit.io/agents/start/voice-ai/"
-            className="underline"
-          >
-            Voice AI quickstart
-          </a>
-          .
-        </p>
+            <Button
+              size="lg"
+              onClick={onStartCall}
+              className="transform rounded-full bg-blue-600 px-8 py-7 text-lg font-semibold text-white shadow-[0_0_30px_rgba(37,99,235,0.4)] transition-all hover:scale-105 hover:bg-blue-500"
+            >
+              {startButtonText}
+            </Button>
+          </div>
+
+          <div className="relative mt-12 h-[50vh] min-h-[400px] w-full flex-1 md:mt-0 md:h-full">
+            <div className="absolute inset-0 origin-center scale-125 md:scale-150">
+              <Compass3D agentState="idle" className="h-full w-full" />
+            </div>
+          </div>
+        </section>
+
+        {/* SECTION 2: FINANCIAL JOURNEY (INTERACTIVE) */}
+        <section className="relative w-full border-t border-zinc-900 bg-zinc-950 py-24">
+          <div className="mx-auto mb-16 max-w-7xl px-6 text-center">
+            <h2 className="mb-6 text-4xl font-bold md:text-5xl">A Journey Tailored to You</h2>
+            <p className="mx-auto max-w-2xl text-xl text-zinc-400">
+              Select a stage below to see how CashCompass adapts to your evolving financial needs.
+            </p>
+          </div>
+
+          {/* Stage Selector */}
+          <div className="hide-scrollbar mx-auto mb-12 w-full max-w-5xl overflow-x-auto px-4 pb-4">
+            <div className="mx-auto flex min-w-max items-center justify-center gap-3">
+              {LIFE_STAGES.map((stage) => (
+                <button
+                  key={stage.id}
+                  onClick={() => setActiveStage(stage)}
+                  className={cn(
+                    'rounded-full border px-6 py-3 text-sm font-semibold transition-all duration-300',
+                    activeStage.id === stage.id
+                      ? 'border-emerald-500/30 bg-emerald-500/20 text-emerald-400 shadow-[0_0_15px_rgba(16,185,129,0.2)]'
+                      : 'border-zinc-800 bg-zinc-900/50 text-zinc-400 hover:bg-zinc-800 hover:text-zinc-200'
+                  )}
+                >
+                  {stage.title}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="h-[600px] w-full md:h-[700px]">
+            <FinancialJourney activeStage={activeStage} />
+          </div>
+        </section>
+
+        {/* SECTION 3: VOICE ASSISTANT EXPERIENCE */}
+        <section className="relative w-full overflow-hidden border-t border-zinc-900 bg-zinc-900/20 py-32">
+          <div className="mx-auto flex max-w-5xl flex-col items-center px-6 text-center">
+            <div className="relative mb-8 h-32 w-32">
+              <Compass3D agentState="listening" className="h-full w-full" />
+              <div className="absolute inset-0 z-[-1] rounded-full bg-emerald-500/10 blur-2xl"></div>
+            </div>
+
+            <h2 className="mb-8 text-4xl font-bold md:text-5xl">Just talk to CashCompass.</h2>
+
+            <div className="mb-12 flex max-w-3xl flex-wrap justify-center gap-4">
+              {[
+                '"What should I do with my first salary?"',
+                '"How can I save more every month?"',
+                '"Can I afford a home?"',
+                '"How much should I save for retirement?"',
+              ].map((q, i) => (
+                <div
+                  key={i}
+                  className="rounded-2xl border border-zinc-800 bg-zinc-900 px-5 py-3 text-sm text-zinc-300 shadow-sm md:text-base"
+                >
+                  {q}
+                </div>
+              ))}
+            </div>
+
+            <Button
+              size="lg"
+              onClick={onStartCall}
+              className="transform rounded-full bg-emerald-600 px-10 py-7 text-lg font-semibold text-white shadow-[0_0_30px_rgba(16,185,129,0.3)] transition-all hover:scale-105 hover:bg-emerald-500"
+            >
+              Start Talking Now
+            </Button>
+          </div>
+        </section>
       </div>
-    </div>
-  );
-};
+    );
+  }
+);
+WelcomeView.displayName = 'WelcomeView';
