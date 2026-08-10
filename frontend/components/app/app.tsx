@@ -8,6 +8,7 @@ import type { AppConfig } from '@/app-config';
 import { AgentSessionProvider } from '@/components/agents-ui/agent-session-provider';
 import { StartAudioButton } from '@/components/agents-ui/start-audio-button';
 import { ViewController } from '@/components/app/view-controller';
+import { AuthBar } from '@/components/app/auth-bar';
 import { Toaster } from '@/components/ui/sonner';
 import { useAgentErrors } from '@/hooks/useAgentErrors';
 import { useDebugMode } from '@/hooks/useDebug';
@@ -41,6 +42,7 @@ export function App({ appConfig }: AppProps) {
   return (
     <AgentSessionProvider session={session}>
       <AppSetup />
+      <AuthBar />
       <main className="grid h-svh grid-cols-1 place-content-center">
         <ViewController appConfig={appConfig} />
       </main>

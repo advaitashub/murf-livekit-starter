@@ -1,0 +1,39 @@
+{
+  "users": {
+    "dc3353d6-ef63-453a-91bd-911c90c62272": {
+      "approved_facts": [
+        "The user's name is Advaita.",
+        "The user wants me to remember their chat summaries always.",
+        "User's name is Advaita.",
+        "User's financial goal is to earn more.",
+        "name=Advaita, financial_goal=earn money by the end of the month"
+      ],
+      "last_seen_at": "2026-08-09T17:06:55.006975Z",
+      "recognized": true
+    },
+    "12345": {
+      "approved_facts": [
+        "I like budgeting monthly",
+        "I like budgeting monthly"
+      ],
+      "last_seen_at": "2026-08-09T16:39:02.085262Z",
+      "recognized": true
+    },
+    "45f88322-bb04-4bc4-9509-2c0a76eb2b32": {
+      "approved_facts": [
+        "name=abc",
+        "name=abc",
+        "job_change_goal=end_of_month"
+      ],
+      "last_seen_at": "2026-08-09T17:13:19.013266Z",
+      "recognized": true
+    },
+    "033303de-4641-48ad-bcc4-c5a3bae6a631": {
+      "approved_facts": [
+        "name=Test"
+      ],
+      "last_seen_at": "2026-08-09T17:34:32.693608Z",
+      "recognized": true
+    }
+  }
+}

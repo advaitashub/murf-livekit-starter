@@ -1,0 +1,34 @@
+[
+  {
+    "id": "dc3353d6-ef63-453a-91bd-911c90c62272",
+    "name": "Advaita Singh",
+    "email": "singhadvaita95@gmail.com",
+    "passwordHash": "70a08c0fd2d69d1d1eba3ca42fa44936:3b793d0b479ecf3d1bbb2209170969b72caf824e825efcefcfa0c93637215507bcde1746620f5c12bedc675169691746ecf6b74027a74442a42ac24ec89a106f",
+    "createdAt": "2026-08-09T14:12:40.682Z",
+    "updatedAt": "2026-08-09T14:12:40.682Z"
+  },
+  {
+    "id": "3f541c72-d12d-478c-9264-9fc21cc5f6c6",
+    "name": "Advaita Singh",
+    "email": "xyz@gmail.com",
+    "passwordHash": "cb2d13c3b9459d57114f9c954bde0683:9d2175d2efe52e91434c91f244cf255ab2582bea60443fc1749a5d20785b381f134460ccea3f9cc5c4760188f92921d25399aee1d814c66170dce38be101cd14",
+    "createdAt": "2026-08-09T14:17:49.948Z",
+    "updatedAt": "2026-08-09T14:17:49.948Z"
+  },
+  {
+    "id": "45f88322-bb04-4bc4-9509-2c0a76eb2b32",
+    "name": "abc",
+    "email": "abc@gmail.com",
+    "passwordHash": "b50280070d999288ad1c92b9c7455e2b:a26f5f22aca74940b6324fcce073953c3a4adac658388582940f6e8e1af48b2a69ca9aabe17474f87542e075ccae1c66384d837527b04809601d3929cd83d59a",
+    "createdAt": "2026-08-09T17:11:05.357Z",
+    "updatedAt": "2026-08-09T17:11:05.357Z"
+  },
+  {
+    "id": "033303de-4641-48ad-bcc4-c5a3bae6a631",
+    "name": "test",
+    "email": "test@gmail.com",
+    "passwordHash": "e4601327ecb08542d40beb8bfbb5488a:f304fef46c96663621b34bf301ba4a625217bd0db8c14564ed11aff000d94fa8a66d78b6c94813289c2d18cf039fea5b0e0c16083c252797ac1cc3f550280e00",
+    "createdAt": "2026-08-09T17:22:09.523Z",
+    "updatedAt": "2026-08-09T17:22:09.523Z"
+  }
+]

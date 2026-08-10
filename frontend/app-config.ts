@@ -33,16 +33,16 @@ export interface AppConfig {
 }
 
 export const APP_CONFIG_DEFAULTS: AppConfig = {
-  companyName: 'Murf AI',
-  pageTitle: 'Voice Agent Starter',
-  pageDescription: 'A voice agent powered by Murf Falcon — the fastest TTS API',
+  companyName: 'CashCompass',
+  pageTitle: 'CashCompass',
+  pageDescription: 'A voice agent powered by CashCompass — the most helfull financial agent',
 
   supportsChatInput: true,
   supportsVideoInput: true,
   supportsScreenShare: true,
   isPreConnectBufferEnabled: true,
 
-  logo: '/murf-logo.svg',
+  logo: "/Public/logo.png",
   accent: '#6366F1',
   logoDark: '/murf-logo-dark.svg',
   accentDark: '#818cf8',

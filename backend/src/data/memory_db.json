@@ -1,0 +1,11 @@
+{
+  "users": {
+    "033303de-4641-48ad-bcc4-c5a3bae6a631": {
+      "approved_facts": [
+        "age=10"
+      ],
+      "last_seen_at": "2026-08-10T17:26:40.526564Z",
+      "recognized": true
+    }
+  }
+}

@@ -1,0 +1,22 @@
+[
+  {
+    "name": "Atal Pension Yojana",
+    "category": "Pension",
+    "min_age": 18,
+    "max_age": 40,
+    "state": "ALL",
+    "benefit": "Government-supported pension scheme",
+    "income_limit": null,
+    "gender": "ALL"
+  },
+  {
+    "name": "Pradhan Mantri Jan-Dhan Yojana",
+    "category": "Financial Inclusion",
+    "min_age": 10,
+    "max_age": 100,
+    "state": "ALL",
+    "benefit": "Access to basic banking and financial services",
+    "income_limit": null,
+    "gender": "ALL"
+  }
+]
