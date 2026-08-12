@@ -8,6 +8,7 @@ from dotenv import load_dotenv
 from livekit import rtc
 from tools.scheme_finder import SchemeTools
 from tools.memory import MemoryTools
+from tools.escalation import create_escalation
 
 from livekit.agents import (
     Agent,
@@ -53,6 +54,7 @@ class Assistant(Agent):
                 self.memory_tools.lookup_user,
                 self.memory_tools.save_user_info,
                 self.scheme_tools.find_financial_schemes,
+                create_escalation,
             ],
         )
 

@@ -1,0 +1,22 @@
+[
+  {
+    "id": "CC-20260812-001",
+    "reason": "Unauthorized transaction reported by user",
+    "summary": "User reported a possible unauthorized transaction from their bank account. Advised to contact the bank immediately. User consented to human support escalation.",
+    "urgency": "high",
+    "language": "English",
+    "follow_up_method": "phone",
+    "status": "open",
+    "created_at": "2026-08-12T23:11:59.013338"
+  },
+  {
+    "id": "CC-20260812-002",
+    "reason": "Unauthorized transaction reported by user",
+    "summary": "User reported an unauthorized transaction from their account. Advised to contact the bank immediately. User consented to escalation.",
+    "urgency": "High",
+    "language": "English",
+    "follow_up_method": "phone",
+    "status": "open",
+    "created_at": "2026-08-12T23:12:18.798135"
+  }
+]

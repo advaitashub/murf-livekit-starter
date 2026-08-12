@@ -3,6 +3,8 @@ import localFont from 'next/font/local';
 import { headers } from 'next/headers';
 import { ThemeProvider } from '@/components/app/theme-provider';
 import { ThemeToggle } from '@/components/app/theme-toggle';
+import Link from 'next/link';
+import { ShieldCheck } from 'lucide-react';
 import { cn } from '@/lib/shadcn/utils';
 import { getAppConfig, getStyles } from '@/lib/utils';
 import '@/styles/globals.css';
@@ -72,21 +74,33 @@ export default async function RootLayout({ children }: RootLayoutProps) {
           disableTransitionOnChange
         >
           <header className="fixed top-0 left-0 z-50 hidden w-full flex-row justify-between p-6 md:flex">
-            <a
-              target="_blank"
-              rel="noopener noreferrer"
-              href="https://livekit.io"
-              className="scale-100 transition-transform duration-300 hover:scale-110"
-            >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={logo} alt={`${companyName} Logo`} className="block size-6 dark:hidden" />
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={logoDark ?? logo}
-                alt={`${companyName} Logo`}
-                className="hidden size-6 dark:block"
-              />
-            </a>
+            <div className="flex items-center gap-6">
+              <a
+                target="_blank"
+                rel="noopener noreferrer"
+                href="https://livekit.io"
+                className="scale-100 transition-transform duration-300 hover:scale-110"
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={logo} alt={`${companyName} Logo`} className="block size-6 dark:hidden" />
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={logoDark ?? logo}
+                  alt={`${companyName} Logo`}
+                  className="hidden size-6 dark:block"
+                />
+              </a>
+
+              <nav aria-label="Primary" className="hidden md:flex md:items-center md:gap-3">
+                <Link
+                  href="/escalations"
+                  className="inline-flex items-center gap-2 rounded-md bg-zinc-900/50 px-3 py-2 text-sm font-medium text-white hover:bg-zinc-900/60"
+                >
+                  <ShieldCheck className="h-4 w-4" />
+                  <span>Human Help</span>
+                </Link>
+              </nav>
+            </div>
           </header>
 
           {children}
