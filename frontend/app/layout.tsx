@@ -4,7 +4,7 @@ import { headers } from 'next/headers';
 import { ThemeProvider } from '@/components/app/theme-provider';
 import { ThemeToggle } from '@/components/app/theme-toggle';
 import Link from 'next/link';
-import { ShieldCheck } from 'lucide-react';
+import { ShieldCheck, BarChart3 } from 'lucide-react';
 import { cn } from '@/lib/shadcn/utils';
 import { getAppConfig, getStyles } from '@/lib/utils';
 import '@/styles/globals.css';
@@ -92,6 +92,13 @@ export default async function RootLayout({ children }: RootLayoutProps) {
               </a>
 
               <nav aria-label="Primary" className="hidden md:flex md:items-center md:gap-3">
+                <Link
+                  href="/analytics"
+                  className="inline-flex items-center gap-2 rounded-md bg-zinc-900/50 px-3 py-2 text-sm font-medium text-white hover:bg-zinc-900/60"
+                >
+                  <BarChart3 className="h-4 w-4" />
+                  <span>Analytics</span>
+                </Link>
                 <Link
                   href="/escalations"
                   className="inline-flex items-center gap-2 rounded-md bg-zinc-900/50 px-3 py-2 text-sm font-medium text-white hover:bg-zinc-900/60"
