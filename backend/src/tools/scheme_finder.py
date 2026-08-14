@@ -1,6 +1,7 @@
 import json
 import logging
 from pathlib import Path
+from typing import Callable
 
 from livekit.agents import RunContext, function_tool
 

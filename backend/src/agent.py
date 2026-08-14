@@ -9,6 +9,9 @@ from livekit import rtc
 from tools.scheme_finder import SchemeTools
 from tools.memory import MemoryTools
 from tools.escalation import create_escalation
+from analytics import record_call
+from pathlib import Path
+from specialist_prompt import INVESTMENT_SPECIALIST_PROMPT
 
 from livekit.agents import (
     Agent,
@@ -17,6 +20,8 @@ from livekit.agents import (
     JobContext,
     JobProcess,
     cli,
+    RunContext,
+    function_tool,
     inference,
     tokenize,
     room_io,
@@ -41,21 +46,61 @@ load_dotenv(".env.local")
 #
 # See README.md for example prompts (customer support, language tutor, receptionist).
 
+class InvestmentSpecialist(Agent):
+
+    def __init__(self, chat_ctx=None) -> None:
+        super().__init__(
+            instructions=INVESTMENT_SPECIALIST_PROMPT,
+            chat_ctx=chat_ctx,
+        )
+
+    async def on_enter(self) -> None:
+        await self.session.generate_reply(
+            instructions=(
+                "You are now taking over the conversation. "
+                "Briefly introduce yourself as the Investment Specialist "
+                "and continue directly from the user's last question. "
+                "Do not repeat the user's question. "
+                "Keep the response concise."
+            )
+        )
 
 class Assistant(Agent):
 
-    def __init__(self) -> None:
+    def __init__(self, chat_ctx=None) -> None:
         self.memory_tools = MemoryTools()
         self.scheme_tools = SchemeTools()
 
         super().__init__(
             instructions=SYSTEM_PROMPT,
+            chat_ctx=chat_ctx,
             tools=[
                 self.memory_tools.lookup_user,
                 self.memory_tools.save_user_info,
                 self.scheme_tools.find_financial_schemes,
                 create_escalation,
             ],
+        )
+    @function_tool()
+    async def transfer_to_investment_specialist(
+        self,
+        context: RunContext,
+    ):
+        """
+        Transfer the conversation to the Investment Specialist for
+        detailed investment-related guidance.
+        """
+
+        logger.info(
+            "🔄 HANDOFF: CashCompass → Investment Specialist | room=%s",
+            context.room.name if hasattr(context, "room") else "unknown",
+        )
+
+        return (
+            InvestmentSpecialist(
+                chat_ctx=self.chat_ctx.copy(exclude_instructions=True)
+            ),
+            "Transferring you to the Investment Specialist.",
         )
 
 server = AgentServer()
@@ -130,6 +175,8 @@ async def my_agent(ctx: JobContext):
     pending_candidate: dict | None = None
     seen_candidates: set[str] = set()
     startup_memory_lookup_done = False
+    call_success = False
+    
 
 
     def _is_yes_reply(text: str) -> bool:
@@ -198,7 +245,7 @@ async def my_agent(ctx: JobContext):
 
     @session.on("user_input_transcribed")
     def on_transcript(ev):
-        nonlocal pending_candidate, startup_memory_lookup_done
+        nonlocal pending_candidate, startup_memory_lookup_done, call_success
         print("USER:", ev.transcript)
 
         if not ev.is_final:
@@ -208,21 +255,25 @@ async def my_agent(ctx: JobContext):
         if not text:
             return
 
+        call_success = True
+
         print("USER:", text)
 
         if not startup_memory_lookup_done:
             startup_memory_lookup_done = True
-            logger.debug("First final user transcript received; running startup lookup_user flow.")
-            asyncio.create_task(
-                session.generate_reply(
-                    user_input=text,
-                    instructions=(
-                        "First call the lookup_user function to retrieve any stored memory for this authenticated user. "
-                        "If memory is found, greet the user personally using the remembered facts. "
-                        "If no memory is found, introduce yourself as CashCompass. "
-                        "Then answer the user's request naturally."
-                    ),
-                )
+            logger.debug(
+                "First final user transcript received; running startup lookup_user flow."
+            )
+
+            session.generate_reply(
+                user_input=text,
+                instructions=(
+                    "First call the lookup_user function to retrieve any stored memory "
+                    "for this authenticated user. "
+                    "If memory is found, greet the user personally using the remembered facts. "
+                    "If no memory is found, introduce yourself as CashCompass. "
+                    "Then answer the user's request naturally."
+                ),
             )
             return
 
@@ -257,6 +308,19 @@ async def my_agent(ctx: JobContext):
         question = _build_consent_question(k, v)
         pending_candidate = {"key": k, "value": v}
         asyncio.create_task(session.generate_reply(instructions=question))
+
+    @session.on("conversation_item_added")
+    def on_conversation_item(ev):
+        nonlocal call_success
+
+        item = ev.item
+
+        if item.role == "user":
+            call_success = True
+            logger.info(
+                "✅ USER MESSAGE DETECTED | room=%s",
+                ctx.room.name,
+            )
 
     async def _confirm_and_save(tool_ctx, key: str, value: str):
         memory_tools = MemoryTools()
@@ -391,6 +455,23 @@ async def my_agent(ctx: JobContext):
 
     assistant = Assistant()
 
+    @session.on("close")
+    def on_close():
+        try:
+            record_call(
+                ctx.room.name,
+                "success" if call_success else "failed"
+            )
+
+            logger.info(
+                "📊 Call recorded | room=%s | outcome=%s",
+                ctx.room.name,
+                "success" if call_success else "failed",
+            )
+
+        except Exception:
+            logger.exception("Failed to record call analytics")    
+
     await session.start(
         agent=assistant,
         room=ctx.room,
@@ -405,12 +486,14 @@ async def my_agent(ctx: JobContext):
             ),
         ),
     )
+        # Day 8: record call outcome when the session ends
+    
 
 
     # At session start, check for existing memory and greet returning users
     tool_ctx = type("ToolContext", (), {"session": session})()
     logger.debug("Startup complete; waiting for the first final user turn before generating the initial greeting.")
-
+    
 
 if __name__ == "__main__":
     cli.run_app(server)
