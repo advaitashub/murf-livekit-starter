@@ -365,8 +365,7 @@ Potential future improvements include:
 B.Tech Computer Science & Engineering
 Birla Institute of Applied Sciences
 
-* GitHub: YOUR_GITHUB_PROFILE
-* LinkedIn: YOUR_LINKEDIN_PROFILE
+* LinkedIn: [YOUR_LINKEDIN_PROFILE](https://www.linkedin.com/in/advaita-singh-41a81b257/)
 
 ---
 
