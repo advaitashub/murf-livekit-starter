@@ -1,139 +1,214 @@
 ````markdown
 # 💰 CashCompass — AI Voice Financial Assistant
 
-CashCompass is a real-time **AI voice financial assistant** designed to help users understand financial topics through natural voice conversations.
+> **A real-time AI voice financial assistant built for the Murf AI Voice for Bharat Challenge — Financial Services Track.**
 
-The project combines speech recognition, an LLM, text-to-speech, persistent user memory, financial scheme discovery, analytics, and multi-agent escalation into a single conversational system.
+CashCompass helps users navigate financial topics through natural voice conversations. It combines **real-time speech processing, LLM reasoning, consent-based memory, financial scheme discovery, tool calling, escalation, and multi-agent handoff** into a single conversational AI system.
 
 ---
 
-## 🚀 Features
+## 🚀 Key Features
 
-### 🎙️ Real-Time Voice Conversation
+### 🎙️ Real-Time Voice AI
 - Real-time voice interaction using **LiveKit**
 - Speech-to-Text using **Deepgram**
-- LLM-based reasoning using **Google Gemini**
-- Natural Text-to-Speech using **Murf AI**
-- Designed for conversational, low-latency interactions
+- LLM reasoning using **Google Gemini**
+- Text-to-Speech using **Murf AI**
+- Conversational voice experience designed for low-latency interaction
 
 ### 🧠 Consent-Based Memory
-CashCompass can remember useful user information with user consent.
+CashCompass can remember useful user information after obtaining consent.
 
 - User memory lookup
 - User information storage
-- Consent-based memory
-- Personalized responses based on approved information
+- Consent-controlled memory
+- Personalized conversations
 
 ### 🏦 Financial Scheme Finder
-The assistant can help users discover relevant government financial schemes based on their requirements.
+Helps users discover relevant government financial schemes based on their requirements.
 
-Examples include:
+Examples:
 - Atal Pension Yojana
 - Pradhan Mantri Jan-Dhan Yojana
-- Other relevant financial schemes
+- Other supported financial schemes
 
 ### 🛠️ Tool Calling
-CashCompass uses tools to extend the capabilities of the AI agent beyond normal LLM responses.
+The AI agent can invoke specialized tools instead of relying entirely on the LLM.
 
 Implemented tools include:
+
 - Memory lookup
 - Memory storage
 - Financial scheme discovery
 - Escalation handling
 - Specialist-agent transfer
 
-### 👨‍💼 Specialist Agent Handoff
-When a conversation requires more specialized assistance, the main agent can transfer the interaction to an **Investment Specialist Agent**.
+### 👨‍💼 Multi-Agent Handoff
+CashCompass uses a dedicated **Investment Specialist Agent** for investment-related conversations.
 
-This creates a multi-agent workflow instead of relying on a single general-purpose agent.
+The primary agent can transfer the conversation when specialized assistance is required.
 
-### 🚨 Human Escalation
-The system includes escalation detection and workflows for situations where the user requires additional assistance.
+### 🚨 Escalation
+The system detects situations that require additional assistance and provides an escalation workflow instead of forcing the AI to handle every situation itself.
 
 ### 📊 Call Analytics
-CashCompass records call information using **SQLite** and provides analytics such as:
+Call information is stored using **SQLite** for tracking:
 
-- Total calls
+- Call outcomes
 - Successful calls
 - Failed calls
-- Call outcomes
-- Usage statistics
+- Call statistics
+- Usage data
 
 ---
 
-## 🏗️ Architecture
+# 🏗️ Architecture
 
 ```text
-                    ┌──────────────────┐
-                    │      User        │
-                    │   Voice Input    │
-                    └────────┬─────────┘
-                             │
-                             ▼
-                    ┌──────────────────┐
-                    │     LiveKit      │
-                    │ Voice Transport  │
-                    └────────┬─────────┘
-                             │
-                             ▼
-                    ┌──────────────────┐
-                    │    Deepgram      │
-                    │      STT         │
-                    └────────┬─────────┘
-                             │
-                             ▼
-              ┌────────────────────────────┐
-              │       CashCompass Agent    │
-              │                            │
-              │       Gemini LLM           │
-              └─────────────┬──────────────┘
-                            │
-          ┌─────────────────┼─────────────────┐
-          │                 │                 │
-          ▼                 ▼                 ▼
-     ┌─────────┐      ┌─────────────┐   ┌────────────┐
-     │ Memory  │      │    Scheme   │   │ Escalation │
-     │  Tools  │      │    Finder   │   │   System   │
-     └─────────┘      └─────────────┘   └────────────┘
-                            │
-                            ▼
-                 ┌────────────────────┐
-                 │ Investment          │
-                 │ Specialist Agent    │
-                 └────────────────────┘
-                            │
-                            ▼
-                    ┌──────────────────┐
-                    │     Murf AI      │
-                    │       TTS        │
-                    └────────┬─────────┘
-                             │
-                             ▼
-                    ┌──────────────────┐
-                    │      User        │
-                    │   Voice Output   │
-                    └──────────────────┘
+                         ┌─────────────────┐
+                         │      USER       │
+                         │  Voice Input    │
+                         └────────┬────────┘
+                                  │
+                                  ▼
+                         ┌─────────────────┐
+                         │     LiveKit     │
+                         │ Voice Transport │
+                         └────────┬────────┘
+                                  │
+                                  ▼
+                         ┌─────────────────┐
+                         │    Deepgram     │
+                         │      STT        │
+                         └────────┬────────┘
+                                  │
+                                  ▼
+                   ┌────────────────────────────┐
+                   │      CashCompass Agent     │
+                   │                            │
+                   │        Gemini LLM          │
+                   └─────────────┬──────────────┘
+                                 │
+              ┌──────────────────┼──────────────────┐
+              │                  │                  │
+              ▼                  ▼                  ▼
+        ┌──────────┐      ┌──────────────┐   ┌─────────────┐
+        │  Memory  │      │    Scheme    │   │ Escalation  │
+        │   Tool   │      │    Finder    │   │   System    │
+        └──────────┘      └──────────────┘   └─────────────┘
+                                 │
+                                 │ Investment Query
+                                 ▼
+                         ┌─────────────────┐
+                         │   Investment    │
+                         │   Specialist    │
+                         │      Agent      │
+                         └─────────────────┘
+                                 │
+                                 ▼
+                         ┌─────────────────┐
+                         │     Murf AI     │
+                         │       TTS       │
+                         └────────┬────────┘
+                                  │
+                                  ▼
+                         ┌─────────────────┐
+                         │      USER       │
+                         │  Voice Output   │
+                         └─────────────────┘
 ````
 
 ---
 
-## 🧰 Tech Stack
+# 🧰 Tech Stack
 
-| Category         | Technology            |
-| ---------------- | --------------------- |
-| Language         | Python                |
-| Voice Transport  | LiveKit               |
-| Speech-to-Text   | Deepgram              |
-| LLM              | Google Gemini         |
-| Text-to-Speech   | Murf AI               |
-| Database         | SQLite                |
-| Agent Framework  | LiveKit Agents        |
-| Embeddings / NLP | Sentence Transformers |
-| Version Control  | Git & GitHub          |
+| Category        | Technology         |
+| --------------- | ------------------ |
+| Language        | Python             |
+| Voice Transport | LiveKit            |
+| Speech-to-Text  | Deepgram           |
+| LLM             | Google Gemini      |
+| Text-to-Speech  | Murf AI            |
+| Agent Framework | LiveKit Agents     |
+| Database        | SQLite             |
+| Memory          | JSON-based storage |
+| Version Control | Git & GitHub       |
 
 ---
 
-## 📂 Project Structure
+# 🔄 Conversation Flow
+
+```text
+User speaks
+    ↓
+LiveKit receives audio
+    ↓
+Deepgram converts speech → text
+    ↓
+Gemini processes the request
+    ↓
+Agent determines required action
+    ↓
+┌────────────────────────────────────┐
+│                                    │
+│  Memory                            │
+│  Financial Scheme Finder           │
+│  Escalation                        │
+│  Investment Specialist             │
+│                                    │
+└──────────────────┬─────────────────┘
+                   ↓
+            Gemini generates
+              response
+                   ↓
+            Murf AI converts
+             text → speech
+                   ↓
+              User hears
+              response
+```
+
+---
+
+# 🧠 Multi-Agent Workflow
+
+```text
+                       CashCompass
+                            │
+              ┌─────────────┴─────────────┐
+              │                           │
+              ▼                           ▼
+      General Financial            Investment Query
+         Assistance                       │
+                                          ▼
+                               Investment Specialist
+                                      Agent
+```
+
+The **CashCompass Agent** handles general financial conversations.
+
+Investment-related queries can be transferred to the **Investment Specialist Agent** for more specialized handling.
+
+---
+
+# 📊 Analytics
+
+CashCompass uses SQLite to record call analytics.
+
+```text
+Call
+ │
+ ├── Call ID
+ ├── Outcome
+ ├── Success / Failure
+ └── Usage Statistics
+```
+
+These records can be used by the dashboard to monitor call activity and agent performance.
+
+---
+
+# 📂 Project Structure
 
 ```text
 cashcompass/
@@ -155,52 +230,47 @@ cashcompass/
 │   └── ...
 │
 ├── requirements.txt
-├── .env
+├── .env.example
+├── .gitignore
 └── README.md
 ```
 
-> The exact structure may differ depending on the current version of the project.
-
 ---
 
-## ⚙️ Installation
+# ⚙️ Setup
 
-### 1. Clone the repository
+## 1. Clone the Repository
 
 ```bash
 git clone YOUR_GITHUB_REPOSITORY_URL
 cd cashcompass
 ```
 
-### 2. Create a virtual environment
+## 2. Create a Virtual Environment
+
+### Windows
 
 ```bash
 python -m venv venv
-```
-
-Activate it:
-
-**Windows**
-
-```bash
 venv\Scripts\activate
 ```
 
-**Linux / macOS**
+### Linux / macOS
 
 ```bash
+python -m venv venv
 source venv/bin/activate
 ```
 
-### 3. Install dependencies
+## 3. Install Dependencies
 
 ```bash
 pip install -r requirements.txt
 ```
 
-### 4. Configure environment variables
+## 4. Configure Environment Variables
 
-Create a `.env` file:
+Create a `.env` file using `.env.example`:
 
 ```env
 LIVEKIT_URL=your_livekit_url
@@ -214,9 +284,9 @@ GOOGLE_API_KEY=your_google_api_key
 MURF_API_KEY=your_murf_api_key
 ```
 
-**Never commit your `.env` file or API keys to GitHub.**
+> ⚠️ **Never commit API keys or `.env` files to GitHub.**
 
-Add this to `.gitignore`:
+Example `.gitignore`:
 
 ```gitignore
 .env
@@ -227,7 +297,7 @@ __pycache__/
 
 ---
 
-## ▶️ Running the Agent
+# ▶️ Run the Agent
 
 After configuring the environment:
 
@@ -235,77 +305,11 @@ After configuring the environment:
 python agent.py
 ```
 
-Depending on the LiveKit configuration, the agent can then connect to the LiveKit room and handle voice conversations.
+The agent connects to the configured LiveKit environment and handles voice conversations.
 
 ---
 
-## 🔄 Conversation Flow
-
-```text
-User speaks
-     ↓
-LiveKit receives audio
-     ↓
-Deepgram converts speech → text
-     ↓
-Gemini processes the request
-     ↓
-Agent decides whether a tool is required
-     ↓
-┌─────────────────────────────────┐
-│ Memory / Scheme Finder /        │
-│ Escalation / Specialist Agent   │
-└─────────────────────────────────┘
-     ↓
-Gemini generates response
-     ↓
-Murf converts text → speech
-     ↓
-User hears response
-```
-
----
-
-## 🧠 Multi-Agent Workflow
-
-CashCompass uses a primary financial assistant along with a specialist agent.
-
-```text
-                    CashCompass
-                         │
-              ┌──────────┴──────────┐
-              │                     │
-              ▼                     ▼
-       General Financial      Investment Query
-          Assistance                │
-                                    ▼
-                         Investment Specialist
-```
-
-The primary agent handles general financial conversations, while investment-related requests can be transferred to the specialist agent.
-
----
-
-## 📊 Analytics
-
-CashCompass uses SQLite to store call analytics.
-
-The analytics system can track:
-
-```text
-Call
- │
- ├── Call ID
- ├── Outcome
- ├── Success / Failure
- └── Usage Statistics
-```
-
-This data can be used by the dashboard to monitor agent performance and call activity.
-
----
-
-## 🔐 Safety & Responsible AI
+# 🔐 Responsible AI
 
 CashCompass is designed as a **financial education and guidance assistant**, not a replacement for a qualified financial advisor.
 
@@ -317,13 +321,13 @@ The system includes:
 * Context-aware responses
 * Tool-based financial information retrieval
 
-Users should independently verify important financial decisions using official sources or qualified professionals.
+Users should verify important financial decisions using official sources or qualified financial professionals.
 
 ---
 
-## 🎯 Project Goals
+# 🎯 What This Project Demonstrates
 
-CashCompass was developed to explore practical applications of:
+CashCompass demonstrates practical implementation of:
 
 * Voice AI
 * Generative AI
@@ -331,41 +335,43 @@ CashCompass was developed to explore practical applications of:
 * Multi-Agent Systems
 * Tool Calling
 * Conversational Memory
-* Financial AI
 * Real-Time Speech Processing
+* Financial AI
 * AI Safety and Escalation
 
 ---
 
-## 🏆 Challenge
+# 🏆 Built For
 
-Built as part of the **Murf AI Voice for Bharat Challenge**, focusing on applying conversational voice AI to the **Financial Services** domain.
+**Murf AI — Voice for Bharat Challenge**
+
+**Track:** Financial Services
+
+CashCompass explores how conversational voice AI can make financial guidance more accessible and natural for users.
 
 ---
 
-## 🔮 Future Improvements
+# 🔮 Future Improvements
 
-Potential future improvements include:
-
-* Multilingual financial conversations
-* More comprehensive financial scheme database
-* Better financial-document retrieval using RAG
-* Improved conversation memory
-* More specialized financial agents
-* Real-time market information through verified APIs
-* Improved analytics dashboard
+* Multilingual voice conversations
+* Expanded financial scheme database
+* RAG-based financial document retrieval
+* Improved long-term memory
+* Additional specialist agents
+* Verified real-time financial APIs
+* Enhanced analytics dashboard
 * User authentication and personalized financial profiles
 
 ---
 
-## 👩‍💻 Author
+# 👩‍💻 Author
 
 **Advaita Singh**
 
 B.Tech Computer Science & Engineering
 Birla Institute of Applied Sciences
 
-* LinkedIn: [Advaita Singh](https://www.linkedin.com/in/advaita-singh-41a81b257/)
+[LinkedIn](https://www.linkedin.com/in/advaita-singh-41a81b257/)
 
 ---
 
